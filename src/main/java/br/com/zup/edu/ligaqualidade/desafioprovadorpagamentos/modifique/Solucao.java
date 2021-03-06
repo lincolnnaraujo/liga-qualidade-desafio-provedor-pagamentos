@@ -44,10 +44,25 @@ public class Solucao {
 		infoTransacoes.forEach(transacao -> {
 			String[] tran = transacao.split(",");
 			String[] retornoTran =  new String[4];
+
 			retornoTran[1] = tran[0];
+			String idTran = tran[6];
+
 			trataTransacao(tran, retornoTran);
+
+			if (!infoAdiantamentos.isEmpty()){
+				for (String adiantamento : infoAdiantamentos) {
+					String[] tranAdiantamento = adiantamento.split(",");
+					if (idTran.equals(tranAdiantamento[0])) {
+						String percentualAdiantamentoTran = String.valueOf(Math.round(Double.parseDouble(tranAdiantamento[1]) * 100));
+						trataAdiantamento(tran, percentualAdiantamentoTran, retornoTran);
+					}
+				}
+			}
+
 			respostaTransacoes.add(retornoTran);
 		});
+
 		return respostaTransacoes;
 	}
 
@@ -61,6 +76,13 @@ public class Solucao {
 			retornoTran[2] = calculoTaxa(tran[0],5);
 			retornoTran[3] = LocalDate.now().plusDays(30).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 		}
+	}
+
+	private static void trataAdiantamento(String[] tran, String percentualAdiantamento, String[] retornoTran){
+		//[status,valorOriginal,valorASerRecebidoDeFato,dataEsperadoRecebimento]
+		retornoTran[0] = "pago";
+		retornoTran[2] = calculoTaxa(retornoTran[2], Integer.parseInt(percentualAdiantamento));
+		retornoTran[3] = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 	}
 
 	private static String calculoTaxa(String valorTransacao, int porcentagem) {
